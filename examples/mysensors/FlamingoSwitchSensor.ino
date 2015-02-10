@@ -1,5 +1,8 @@
-/* (c) windkh 2015
-Flamingo Switch Sensor for see www.mysensors.org
+/*
+Flamingo Switch MySensors sample sketch (see www.mysensors.org)
+Created by Karl-Heinz Wind - karl-heinz.wind@web.de
+Copyright 2015 License: GNU GPL v3 http://www.gnu.org/licenses/gpl-3.0.html
+
 required hardware:
 - 1x Arduino
 - 1x Radio NRF24L01+

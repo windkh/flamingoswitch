@@ -1,3 +1,11 @@
+// ---------------------------------------------------------------------------
+// Flamingo Switch Library - v1.0 - 10.2.2015
+//
+// AUTHOR/LICENSE:
+// Created by Karl-Heinz Wind - karl-heinz.wind@web.de
+// Copyright 2015 License: GNU GPL v3 http://www.gnu.org/licenses/gpl-3.0.html
+// ---------------------------------------------------------------------------
+
 #ifndef FLAMINGO_SWITCH_H
 #define FLAMINGO_SWITCH_H
 
