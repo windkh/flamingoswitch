@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Flamingo Switch Library - v1.0 - 10.2.2015
+// Flamingo Switch Library - v1.1 - 28.3.2015
 //
 // AUTHOR/LICENSE:
 // Created by Karl-Heinz Wind - karl-heinz.wind@web.de
@@ -20,7 +20,7 @@ FlamingoSwitch::FlamingoSwitch()
 	this->nTransmitterPin = -1;
 	this->nReceiverInterrupt = -1;
 	FlamingoSwitch::nReceivedValue = NULL;
-	this->nPulseLength = 300;
+	this->nPulseLength = 325;
 }
 
 
@@ -237,7 +237,7 @@ bool FlamingoSwitch::receiveProtocol(unsigned int changeCount)
 	}
 }
 
-#define LIMIT_28BIT 4000 // the sync is about 5000 (15* 300us9
+#define LIMIT_28BIT 4000 // the sync is about 4875 (15* 325us)
 #define LIMIT_24BIT 6000
 
 #define TOLERANCE 200
@@ -253,9 +253,9 @@ void FlamingoSwitch::handleInterrupt()
 
 	// The device sends:
 	// 4 times a 28Bit code
-	// 6 times an unknown code
+	// 6 times a 32Bit code
 	// 6 times a 24Bit code
-	// we are only interested in the first one (28Bit), so we filter away.
+	// we are only interested in the first one (28Bit), so we filter the others away.
 	// This is done by taking only the code with the short sync of 
 	if (duration > LIMIT_28BIT && duration < LIMIT_24BIT)
 	{
