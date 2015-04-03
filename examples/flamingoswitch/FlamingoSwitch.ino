@@ -11,7 +11,7 @@ required hardware:
 connect PIN3 to receiver-unit Data-PIN
 connect PIN4 to sender-unit Data-PIN
 
-The sketch listenes for codes from the remote control and prints em via serial.
+The sketch listens for codes from the remote control and prints em via serial.
 Every button sends 4 different codes, so don't be confused when you read different codes
 when pressing the same button several times. indeed you need only one of the four to control
 the socket.
