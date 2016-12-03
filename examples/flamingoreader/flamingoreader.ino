@@ -2,16 +2,13 @@
  Thanks to wex_storm for contributing this on
  http://forum.arduino.cc/index.php?topic=201771.15
 
- Copyright 2015 License: GNU GPL v3 http://www.gnu.org/licenses/gpl-3.0.html
-
-
  Flamingo switch sample.
 
  required hardware:
  - 1x Arduino
  - 1x 433MHz Receiver
 
- connect PIN3 to receiver-unit Data-PIN
+ connect PIN2 to receiver-unit Data-PIN
 
  The sketch listenes for codes from the remote control and prints em via serial.
  Every button sends 4 different codes, so don't be confused when you read different codes
@@ -24,9 +21,12 @@
 
 FlamingoSwitch Switch;
 
-int RX_PIN = 1; // PIN3 rx needs to be an IRQ pin!
-
+// Change this number if your remote control supplies more than 4 codes.
 const int CODE_COUNT = 4;
+
+// Receive PIN needs to be an IRQ pin!
+int RX_PIN = 0; // <-- IRQ 0 is PIN2 on a Arduino Uno
+
 
 int counter = 0;
 int deviceCounter = 0;
@@ -92,14 +92,32 @@ void output(unsigned long code, unsigned int length, unsigned int delay, unsigne
 		Serial.println();
 		for (int i = 0; i < deviceCounter; i++)
 		{
+			uint32_t codeFromList = codes[i];
 			Serial.print("Counter: ");
 			Serial.print(i);
 			Serial.print(" Code: ");
-			Serial.print(codes[i]);
+			Serial.print(codeFromList);
 			Serial.print(" Code: 0x");
-			Serial.print(codes[i], HEX);
+			Serial.print(codeFromList, HEX);
 			Serial.print(" Bin: ");
-			Serial.println(bins[i]);
+			Serial.print(bins[i]);
+
+			uint16_t receiverId;
+			uint8_t value;
+			uint8_t rollingCode;
+			uint16_t transmitterId;
+			Switch.decrypt(codeFromList, receiverId, value, rollingCode, transmitterId);
+
+			Serial.print(" Button: ");
+			Serial.print(receiverId, DEC);
+			Serial.print(" ON/OFF/DIM: ");
+			Serial.print(value, DEC);
+			Serial.print(" Rolling-Code: ");
+			Serial.print(rollingCode, DEC);
+			Serial.print(" TransmitterId: 0x");
+			Serial.print(transmitterId, HEX);
+
+			Serial.println();
 		}
 
 		if (deviceCounter == CODE_COUNT)

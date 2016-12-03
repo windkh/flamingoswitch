@@ -1,9 +1,5 @@
 // ---------------------------------------------------------------------------
-// Flamingo Switch Library - v1.0 - 10.2.2015
-//
-// AUTHOR/LICENSE:
-// Created by Karl-Heinz Wind - karl-heinz.wind@web.de
-// Copyright 2015 License: GNU GPL v3 http://www.gnu.org/licenses/gpl-3.0.html
+// Flamingo Switch Library - v2.0
 // ---------------------------------------------------------------------------
 
 #ifndef FLAMINGO_SWITCH_H
@@ -23,7 +19,7 @@ class FlamingoSwitch
 
 public:
 	FlamingoSwitch();
-	
+
 	void enableTransmit(int nTransmitterPin);
 	void disableTransmit();
 	void transmit(int nHighPulses, int nLowPulses);
@@ -41,6 +37,10 @@ public:
 	void disableReceive();
 
 	void send(uint32_t code, unsigned int retries = DEFAULT_RETRIES);
+
+	static void decrypt(uint32_t input, uint16_t& receiverId, uint8_t& value, uint8_t& rollingCode, uint16_t& transmitterId);
+	static uint32_t encrypt(uint8_t receiverId, uint8_t value, uint8_t rollingCode, uint16_t transmitterId);
+
 private:
 
 	void send0();
