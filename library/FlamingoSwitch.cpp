@@ -330,13 +330,14 @@ void FlamingoSwitch::decrypt(uint32_t input, uint16_t& receiverId, uint8_t& valu
     //Output decrypted message 
     //uint32_t in = (~((input >> 2) | (((input & 3) << 0x1a))) << 4);
     receiverId = (uint16_t)mn[0];
-    value = (((mn[1] >> 1) & 1) + (mn[6] & 0x7) + ((mn[6] & 0x8) >> 4));
+    value = (((mn[1] >> 1) & 1) + (mn[6] & 0x7) + ((mn[6] & 0x8) >> 3));
     rollingCode = (mn[1] >> 2);
     transmitterId = (mn[5] << 12) + (mn[4] << 8) + (mn[3] << 4) + (mn[2] << 0);
 }
 
 
 static uint8_t key[17] = { 9, 6, 3, 8, 10, 0, 2, 12, 4, 14, 7, 5, 1, 15, 11, 13, 9 }; //cryptokey 
+
 /*
     Encrypts the
     button = receiverId
