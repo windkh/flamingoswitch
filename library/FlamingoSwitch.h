@@ -12,7 +12,7 @@
 // 32Bit-->67
 #define FLAMINGO_MAX_CHANGES 32 * 2 + 2 + 1 
 
-const unsigned int DEFAULT_RETRIES = 4;
+const unsigned int DEFAULT_RETRIES = 1;
 
 class FlamingoSwitch
 {

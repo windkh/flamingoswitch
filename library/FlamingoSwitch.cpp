@@ -18,7 +18,7 @@ FlamingoSwitch::FlamingoSwitch()
     this->nTransmitterPin = -1;
     this->nReceiverInterrupt = -1;
     FlamingoSwitch::nReceivedValue = NULL;
-    this->nPulseLength = 320;
+    this->nPulseLength = 330;
 }
 
 
@@ -72,7 +72,7 @@ void FlamingoSwitch::send(uint32_t code, unsigned int retries)
     unsigned long DataBit;
     unsigned long DataMask = 0x80000000;
 
-    for (int i = 0; i <= retries; i++)
+    for (int j = 0; j <= retries; j++)
     {
         sendSync();
 
