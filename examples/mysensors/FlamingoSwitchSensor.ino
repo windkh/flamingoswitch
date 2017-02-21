@@ -72,7 +72,8 @@ const int IRQ_PIN = 1; // IRQ1 = PIN 3 on Arduino Uno
 
 #define DEVICES	 4				/* Amount of units supported per remote control A-D*/
 #define CODES_PER_DEVICE 4		/* Amount of codes stored per A-D*/
-#define DELAY 50                /* Delay in ms between code transmissions */
+int OnCounter = 0;
+int OffCounter = 0;
 
 // the remote control sends 4 different codes of each state.
 struct Codes
@@ -89,21 +90,21 @@ struct Device
 
 Device DEVICE_CODES[DEVICES] =
 {
-	{
-		{ 0x24DC2060, 0x267C51A0, 0x25C90CE0, 0x277193A0 }, // (28Bit) A OFF
-		{ 0x25B25B60, 0x24613E20, 0x27263DE0, 0x24E77D60 }  // (28Bit) A ON 
+	{ //  0          1          2          3 
+		{ 0x25C90CE, 0x24DC206, 0x277193A, 0x267C51A }, // (28Bit) A OFF
+		{ 0x24E77D6, 0x27263DE, 0x25B25B6, 0x24613E2 }  // (28Bit) A ON 
 	},
 	{
-		{ 0x275BADD0, 0x26933A90, 0x27F31150, 0x2440F0D0 }, // (28Bit) B OFF
-		{ 0x2717B510, 0x2547C990, 0x26585B90, 0x259A0850 }  // (28Bit) B ON 
+		{ 0x275BADD, 0x27F3115, 0x2440F0D, 0x26933A9 }, // (28Bit) B OFF
+		{ 0x2547C99, 0x26585B9, 0x259A085, 0x2717B51 }  // (28Bit) B ON 
 	},
 	{
-		{ 0xE4936D50, 0xE73720D0, 0xE616D1D0, 0xE4D49F50 }, // (28Bit) C OFF
-		{ 0xE56BF910, 0xE56EB710, 0xE62AF390, 0xE4FBCD90 }  // (28Bit) C ON 
+		{ 0xE73720D, 0xE616D1D, 0xE4D49F5, 0xE4936D5 }, // (28Bit) C OFF
+		{ 0xE62AF39, 0xE56BF91, 0xE4FBCD9, 0xE56EB71 }  // (28Bit) C ON 
 	},
 	{
-		{ 0x65B67B60, 0x64C8BFA0, 0x6504C320, 0x6526F4A0 }, // (28Bit) D OFF
-		{ 0x65F1C2A0, 0x670319A0, 0x65E19420, 0x643F9860 }  // (28Bit) D ON 
+		{ 0x65B67B6, 0x64C8BFA, 0x6504C32, 0x6526F4A }, // (28Bit) D OFF
+		{ 0x670319A, 0x65E1942, 0x643F986, 0x65F1C2A }  // (28Bit) D ON 
 	}
 };
 
@@ -115,7 +116,7 @@ void send(uint32_t code)
 	Serial.print(code, HEX);
 	Serial.println("");
 
-	Switch.send(code);
+	Switch.send(code, 0);
 }
 
 // send the state (on/off) to the switch 1..n
@@ -144,22 +145,19 @@ void send(uint8_t device, uint8_t state)
 	Serial.print(state);
 	Serial.println();
 
+	uint32_t sendBuffer;
 	if (state == OFF)
 	{
-		for (int i = 0; i < CODES_PER_DEVICE; i++)
-		{
-			send(DEVICE_CODES[device].Off.Code[3-i]);
-			delay(DELAY);
-		}
+		int i = OffCounter++ % CODES_PER_DEVICE;
+		sendBuffer = DEVICE_CODES[device].Off.Code[i];
 	}
 	else
 	{
-		for (int i = 0; i < CODES_PER_DEVICE; i++)
-		{
-			send(DEVICE_CODES[device].On.Code[3-i]);
-			delay(DELAY);
-		}
+		int i = OnCounter++ % CODES_PER_DEVICE;
+		sendBuffer = DEVICE_CODES[device].On.Code[i];
 	}
+
+	send(sendBuffer);
 }
 
 // timer handler to read and send temperature
@@ -251,10 +249,8 @@ void loop()
 	{
 		unsigned long code = Switch.getReceivedValue();
 		
-		uint32_t state = code << 4; // 28Bit --> 32Bit
-
 		Serial.print("Detected code:");
-		Serial.print(state, HEX);
+		Serial.print(code, HEX);
 		Serial.println("");
 
 		MyMessage message(0, V_VAR1);

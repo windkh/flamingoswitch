@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Flamingo Switch Library - v2.0
+// Flamingo Switch Library - v3.0
 // ---------------------------------------------------------------------------
 
 #ifndef FLAMINGO_SWITCH_H
@@ -12,7 +12,8 @@
 // 32Bit-->67
 #define FLAMINGO_MAX_CHANGES 32 * 2 + 2 + 1 
 
-const unsigned int DEFAULT_RETRIES = 1;
+// The remote control repeates the same code 4 times.
+const uint8_t DEFAULT_RETRIES = 4;
 
 class FlamingoSwitch
 {
@@ -22,7 +23,6 @@ public:
 
 	void enableTransmit(int nTransmitterPin);
 	void disableTransmit();
-	void transmit(int nHighPulses, int nLowPulses);
 
 	bool available() const;
 	void resetAvailable();
@@ -36,17 +36,18 @@ public:
 	void enableReceive();
 	void disableReceive();
 
-	void send(uint32_t code, unsigned int retries = DEFAULT_RETRIES);
+	void send(uint32_t code, uint8_t retries = DEFAULT_RETRIES);
 
 	static void decrypt(uint32_t input, uint16_t& receiverId, uint8_t& value, uint8_t& rollingCode, uint16_t& transmitterId);
 	static uint32_t encrypt(uint8_t receiverId, uint8_t value, uint8_t rollingCode, uint16_t transmitterId);
 
 private:
 
-	void send0();
-	void send1();
-	void sendSync();
-
+	inline void send0();
+	inline void send1();
+	inline void sendSync();
+	inline void transmit(int nHighPulses, int nLowPulses);
+	
 	static void handleInterrupt();
 	static bool receiveProtocol(unsigned int changeCount);
 

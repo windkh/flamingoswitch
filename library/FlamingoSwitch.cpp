@@ -1,9 +1,11 @@
 // ---------------------------------------------------------------------------
-// Flamingo Switch Library - v2.0
+// Flamingo Switch Library - v3.0
 // ---------------------------------------------------------------------------
 
-
 #include "FlamingoSwitch.h"
+
+// microseconds
+const int PULSE_LENGTH = 330;
 
 unsigned long FlamingoSwitch::nReceivedValue = NULL;
 unsigned int FlamingoSwitch::nReceivedBitlength = 0;
@@ -11,16 +13,13 @@ int FlamingoSwitch::nReceiveTolerance = 60;
 unsigned int FlamingoSwitch::nReceivedDelay = 0;
 unsigned int FlamingoSwitch::timings[FLAMINGO_MAX_CHANGES];
 
-
-
 FlamingoSwitch::FlamingoSwitch()
 {
     this->nTransmitterPin = -1;
     this->nReceiverInterrupt = -1;
     FlamingoSwitch::nReceivedValue = NULL;
-    this->nPulseLength = 330;
+	this->nPulseLength = PULSE_LENGTH;
 }
-
 
 /**
 * Enable transmissions
@@ -41,57 +40,55 @@ void FlamingoSwitch::disableTransmit()
     this->nTransmitterPin = -1;
 }
 
-void FlamingoSwitch::transmit(int nHighPulses, int nLowPulses)
+
+// Disables the receiver and transmits the whole code before enabling the receiver again.
+// The code must be right aligned: lower 28 bits.
+void FlamingoSwitch::send(uint32_t code, uint8_t retries)
 {
-    boolean disabled_Receive = false;
-    int nReceiverInterrupt_backup = nReceiverInterrupt;
+	if (this->nTransmitterPin != -1)
+	{
+		boolean disabled_Receive = false;
+		int nReceiverInterrupt_backup = nReceiverInterrupt;
 
-    if (this->nTransmitterPin != -1)
-    {
-        if (this->nReceiverInterrupt != -1)
-        {
-            this->disableReceive();
-            disabled_Receive = true;
-        }
+		if (this->nReceiverInterrupt != -1)
+		{
+			this->disableReceive();
+			disabled_Receive = true;
+		}
 
-        digitalWrite(this->nTransmitterPin, HIGH);
-        delayMicroseconds(this->nPulseLength * nHighPulses);
-        digitalWrite(this->nTransmitterPin, LOW);
-        delayMicroseconds(this->nPulseLength * nLowPulses);
+		{
+			for (int j = 0; j < retries; j++)
+			{
+				sendSync();
 
-        if (disabled_Receive)
-        {
-            this->enableReceive(nReceiverInterrupt_backup);
-        }
-    }
+				for (int i = 27; i >= 0; i--)   // Flamingo command is only 28 bits: we take the lower ones.*/
+				{
+					if (code & (1L << i))
+					{
+						send1();
+					}
+					else
+					{
+						send0();
+					}
+				}
+			}
+		}
+
+		if (disabled_Receive)
+		{
+			this->enableReceive(nReceiverInterrupt_backup);
+		}
+	}
 }
 
 
-void FlamingoSwitch::send(uint32_t code, unsigned int retries)
+inline void FlamingoSwitch::transmit(int nHighPulses, int nLowPulses)
 {
-    unsigned long DataBit;
-    unsigned long DataMask = 0x80000000;
-
-    for (int j = 0; j <= retries; j++)
-    {
-        sendSync();
-
-        for (int i = 0; i < 28; i++)   // Flamingo command is only 28 bits */
-        {
-            DataBit = code & DataMask; // Get most left bit
-            code = (code << 1);        // Shift left
-
-            if (DataBit != DataMask)
-            {
-                send0();
-            }
-            else
-            {
-                send1();
-            }
-        }
-    }
-
+	digitalWrite(this->nTransmitterPin, HIGH);
+	delayMicroseconds(this->nPulseLength * nHighPulses);
+	digitalWrite(this->nTransmitterPin, LOW);
+	delayMicroseconds(this->nPulseLength * nLowPulses);
 }
 
 /**
@@ -99,7 +96,7 @@ void FlamingoSwitch::send(uint32_t code, unsigned int retries)
 *                     _
 * Waveform Protocol: | |___
 */
-void FlamingoSwitch::send0()
+inline void FlamingoSwitch::send0()
 {
     this->transmit(1, 3);
 }
@@ -109,7 +106,7 @@ void FlamingoSwitch::send0()
 *                      ___
 * Waveform Protocol : |   |_
 */
-void FlamingoSwitch::send1()
+inline void FlamingoSwitch::send1()
 {
     this->transmit(3, 1);
 }
@@ -119,9 +116,9 @@ void FlamingoSwitch::send1()
 *                     _
 * Waveform Protocol: | |_______________
 */
-void FlamingoSwitch::sendSync()
+inline void FlamingoSwitch::sendSync()
 {
-    this->transmit(1, 15);
+	this->transmit(1, 15);
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -135,8 +132,8 @@ void FlamingoSwitch::enableReceive()
 {
     if (this->nReceiverInterrupt != -1)
     {
-        FlamingoSwitch::nReceivedValue = NULL;
-        FlamingoSwitch::nReceivedBitlength = NULL;
+        FlamingoSwitch::nReceivedValue = 0;
+        FlamingoSwitch::nReceivedBitlength = 0;
         attachInterrupt(this->nReceiverInterrupt, handleInterrupt, CHANGE);
     }
 }
